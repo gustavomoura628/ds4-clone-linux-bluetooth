@@ -1,0 +1,49 @@
+Third-party components and attributions
+=======================================
+
+1. tools/bluez-input-hidp-clone.patch
+
+   This patch modifies BlueZ (http://www.bluez.org/), which is free software
+   distributed under the GNU General Public License version 2 or later
+   (GPL-2.0-or-later). The patch is a derivative work of BlueZ's
+   profiles/input/device.c and is therefore distributed under the same licence,
+   GPL-2.0-or-later. It is provided as a patch only; no BlueZ source code is
+   redistributed in this repository. Obtain BlueZ from
+   https://www.kernel.org/pub/linux/bluetooth/ and apply the patch as described
+   in docs/04-replication.md.
+
+   BlueZ is a trademark of the BlueZ project. Nothing in this repository implies
+   endorsement by the BlueZ project or its maintainers.
+
+2. Linux kernel and BlueZ references
+
+   Quotes from net/bluetooth/l2cap_core.c and net/bluetooth/hci_conn.c (Linux
+   kernel, GPL-2.0-only) and from BlueZ's profiles/input/server.c and
+   profiles/input/device.c (GPL-2.0-or-later) in docs/02-root-cause.md and
+   docs/03-the-fix.md are short excerpts used for technical explanation.
+
+3. DualShock 4 protocol information
+
+   The feature-report layout used in docs/01-device-identification.md is
+   documented in public sources: the Linux kernel hid-playstation driver
+   (drivers/hid/hid-playstation.c), the jedi_tool.py script in
+   https://github.com/chrepl/ds4, and community reverse-engineering notes.
+   No Sony firmware, Sony tooling, or Sony confidential material is included
+   or derived from here.
+
+4. Documentation
+
+   The prose in README.md and docs/, and the files in evidence/, are licensed
+   CC BY 4.0 (full text: docs/LICENSE-CC-BY-4.0.txt).
+
+5. Code and scripts
+
+   install.sh, uninstall.sh, tools/*.sh, tools/*.py, the udev rule and the
+   systemd unit template are licensed MIT (see LICENSE), except the BlueZ
+   patch in item 1.
+
+6. No warranty / risk
+
+   Installing a modified system daemon is done at your own risk. install.sh
+   backs up the original binary and uninstall.sh restores it (or reinstalls the
+   bluez package); nothing is written to the controller.

@@ -1,0 +1,16 @@
+# DS4-mode feature reports read over USB (hidraw, HIDIOCGFEATURE ioctl)
+#
+# Output of tools/ds4_features.py, which probes the reports used by public DS4
+# tooling (0x05 and 0x06 are not declared by this descriptor). The sweep of all
+# 48 declared reports is in feature-sweep-ds4-usb.txt. Report 0xA3 carries the
+# firmware identity block analysed in docs/01-device-identification.md.
+# The last six bytes of 0x12 (host address) are redacted to 11:22:33:44:55:66.
+#
+0x02 [calibration (USB)] ret=37: 02 02 00 00 00 01 00 99 22 69 dd 9c 22 62 dd b4 22 51 dd 1c 02 1c 02 b9 1f 5d e0 94 1f 3e e0 e3 1c 86 de 03 00
+0x05 [calibration (BT-style)] ERROR [Errno 32] Broken pipe
+0x12 [pairing info: dev MAC + host MAC] ret=16: 12 d1 32 ca f7 9d ed 08 25 00 66 55 44 33 22 11
+0x81 [MAC (USB)] ret=7: 81 c0 61 f2 e2 1f 00
+0xa3 [firmware info] ret=49: a3 4d 61 79 20 31 37 20 32 30 31 36 00 00 00 00 00 30 36 3a 33 36 3a 32 36 00 00 00 00 00 00 00 00 00 01 04 64 01 00 00 00 08 70 00 02 00 80 03 00
+0x06 [?] ERROR [Errno 32] Broken pipe
+0x08 [?] ERROR [Errno 32] Broken pipe
+0x10 [?] ERROR [Errno 32] Broken pipe

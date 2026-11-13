@@ -1,0 +1,179 @@
+# btmon trace - plain power-on, Ubuntu's unmodified bluez 5.64-0ubuntu1.6, no reconnect helper (failure mode A)
+#
+# Captured with `btmon -w`, decoded with `btmon -r <file> -t`. Window: from the
+# controller's Connect Request to the disconnect; nothing omitted. The host
+# address is redacted to 11:22:33:44:55:66 and the link key to <redacted>.
+#
+# Timeline (relative to Connect Complete at 23:10:01.419541):
+#   +126 ms  Link Key Request from the controller; host replies with the stored key
+#   +208 ms  controller requests the HIDP control channel (PSM 17)
+#   +208 ms  kernel refuses it: "Connection refused - security block (0x0003)"
+#   +264 ms  Encryption Change: link encrypted
+#   +4.07 s  kernel sends HCI Disconnect, reason 0x05 (Authentication Failure);
+#            no MGMT Disconnect command from bluetoothd precedes it
+# The controller makes no further L2CAP request on this link.
+#
+> HCI Event: Connect Request (0x04) plen 10           #1 [hci0] 23:10:01.244514
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+        Link type: ACL (0x01)
+< HCI Command: Accept Connect.. (0x01|0x0009) plen 7  #2 [hci0] 23:10:01.244658
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Command Status (0x0f) plen 4             #3 [hci0] 23:10:01.246448
+      Accept Connection Request (0x01|0x0009) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Role Change (0x12) plen 8                #4 [hci0] 23:10:01.398497
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Connect Complete (0x03) plen 11          #5 [hci0] 23:10:01.419541
+        Status: Success (0x00)
+        Handle: 2
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link type: ACL (0x01)
+        Encryption: Disabled (0x00)
+< HCI Command: Read Remote Su.. (0x01|0x001b) plen 2  #6 [hci0] 23:10:01.419668
+        Handle: 2
+> HCI Event: Max Slots Change (0x1b) plen 3           #7 [hci0] 23:10:01.422446
+        Handle: 2
+        Max slots: 5
+> HCI Event: Command Status (0x0f) plen 4             #8 [hci0] 23:10:01.424434
+      Read Remote Supported Features (0x01|0x001b) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Max Slots Change (0x1b) plen 3           #9 [hci0] 23:10:01.432498
+        Handle: 2
+        Max slots: 5
+> HCI Event: Max Slots Change (0x1b) plen 3          #10 [hci0] 23:10:01.436446
+        Handle: 2
+        Max slots: 5
+> HCI Event: Read Remote Supported.. (0x0b) plen 11  #11 [hci0] 23:10:01.438449
+        Status: Success (0x00)
+        Handle: 2
+        Features: 0xbf 0xfe 0x8d 0xfe 0xc8 0x2d 0x79 0x83
+          3 slot packets
+          5 slot packets
+          Encryption
+          Slot offset
+          Timing accuracy
+          Role switch
+          Sniff mode
+          Power control requests
+          Channel quality driven data rate (CQDDR)
+          SCO link
+          HV2 packets
+          HV3 packets
+          u-law log synchronous data
+          A-law log synchronous data
+          CVSD synchronous data
+          Power control
+          Transparent synchronous data
+          Broadcast Encryption
+          Enhanced Data Rate ACL 2 Mbps mode
+          Enhanced Data Rate ACL 3 Mbps mode
+          Enhanced inquiry scan
+          Interlaced inquiry scan
+          Interlaced page scan
+          RSSI with inquiry results
+          Extended SCO link (EV3 packets)
+          AFH capable peripheral
+          LE Supported (Controller)
+          3-slot Enhanced Data Rate ACL packets
+          5-slot Enhanced Data Rate ACL packets
+          Pause encryption
+          AFH capable central
+          Enhanced Data Rate eSCO 2 Mbps mode
+          Extended Inquiry Response
+          Secure Simple Pairing
+          Encapsulated PDU
+          Erroneous Data Reporting
+          Non-flushable Packet Boundary Flag
+          Link Supervision Timeout Changed Event
+          Inquiry TX Power Level
+          Extended features
+< HCI Command: Read Remote E.. (0x01|0x001c) plen 3  #12 [hci0] 23:10:01.438467
+        Handle: 2
+        Page: 1
+> HCI Event: Command Status (0x0f) plen 4            #13 [hci0] 23:10:01.439496
+      Read Remote Extended Features (0x01|0x001c) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Remote Name Req Comp.. (0x07) plen 255  #14 [hci0] 23:10:01.457492
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Name: Wireless Controller
+@ MGMT Event: Device Connec.. (0x000b) plen 39  {0x0001} [hci0] 23:10:01.457512
+        BR/EDR Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Flags: 0x00000000
+        Data length: 26
+        Name (complete): Wireless Controller
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+> HCI Event: Read Remote Extended... (0x23) plen 13  #15 [hci0] 23:10:01.458495
+        Status: Success (0x00)
+        Handle: 2
+        Page: 1/2
+        Features: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+          Secure Simple Pairing (Host Support)
+< ACL Data TX: Handle 2 flags 0x00 dlen 10           #16 [hci0] 23:10:01.458520
+      L2CAP: Information Request (0x0a) ident 1 len 2
+        Type: Extended features supported (0x0002)
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #17 [hci0] 23:10:01.472437
+        Num handles: 1
+        Handle: 2
+        Count: 1
+> HCI Event: Link Key Request (0x17) plen 6          #18 [hci0] 23:10:01.545445
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+< HCI Command: Link Key Req.. (0x01|0x000b) plen 22  #19 [hci0] 23:10:01.545592
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link key: <redacted>
+> HCI Event: Command Complete (0x0e) plen 10         #20 [hci0] 23:10:01.552441
+      Link Key Request Reply (0x01|0x000b) ncmd 2
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+> ACL Data RX: Handle 2 flags 0x02 dlen 12           #21 [hci0] 23:10:01.554191
+      L2CAP: Information Response (0x0b) ident 1 len 4
+        Type: Extended features supported (0x0002)
+        Result: Not supported (0x0001)
+> ACL Data RX: Handle 2 flags 0x02 dlen 12           #22 [hci0] 23:10:01.627189
+      L2CAP: Connection Request (0x02) ident 3 len 4
+        PSM: 17 (0x0011)
+        Source CID: 80
+< ACL Data TX: Handle 2 flags 0x00 dlen 16           #23 [hci0] 23:10:01.627317
+      L2CAP: Connection Response (0x03) ident 3 len 8
+        Destination CID: 0
+        Source CID: 80
+        Result: Connection refused - security block (0x0003)
+        Status: No further information available (0x0000)
+> HCI Event: Encryption Change (0x08) plen 4         #24 [hci0] 23:10:01.683491
+        Status: Success (0x00)
+        Handle: 2
+        Encryption: Enabled with E0 (0x01)
+< HCI Command: Read Encrypti.. (0x05|0x0008) plen 2  #25 [hci0] 23:10:01.683504
+        Handle: 2
+> HCI Event: Command Complete (0x0e) plen 7          #26 [hci0] 23:10:01.686489
+      Read Encryption Key Size (0x05|0x0008) ncmd 2
+        Status: Success (0x00)
+        Handle: 2
+        Key size: 16
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #27 [hci0] 23:10:01.687392
+        Num handles: 1
+        Handle: 2
+        Count: 1
+< HCI Command: Disconnect (0x01|0x0006) plen 3       #28 [hci0] 23:10:05.487313
+        Handle: 2
+        Reason: Authentication Failure (0x05)
+> HCI Event: Command Status (0x0f) plen 4            #29 [hci0] 23:10:05.488313
+      Disconnect (0x01|0x0006) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Disconnect Complete (0x05) plen 4       #30 [hci0] 23:10:05.570316
+        Status: Success (0x00)
+        Handle: 2
+        Reason: Authentication Failure (0x05)
+@ MGMT Event: Device Disconn.. (0x000c) plen 8  {0x0001} [hci0] 23:10:05.570337
+        BR/EDR Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Reason: Unspecified (0x00)

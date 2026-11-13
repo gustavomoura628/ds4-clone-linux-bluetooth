@@ -1,0 +1,20 @@
+# tools/ds4-reconnect.sh logs, from the same two runs as btmon-duplicate-channel-refused.txt
+# and btmon-successful-connect.txt
+#
+# Unmodified bluez 5.64-0ubuntu1.6 (failure mode B): ConnectProfile fails once the controller hangs up,
+# and the fallback `bluetoothctl connect` finds the controller already gone.
+23:10:46.357 watching ED:9D:F7:CA:32:D1 (log <logdir>/reconnect-20261112-231046.log)  input devices before: []
+23:11:00.045 link up -> ConnectProfile 00001124-0000-1000-8000-00805f9b34fb
+Call failed: br-connection-create-socket
+23:11:02.634 no input device yet - falling back to a plain connect
+Attempting to connect to ED:9D:F7:CA:32:D1
+Failed to connect: org.bluez.Error.Failed br-connection-create-socket
+23:11:09.146 result: input=[]  links=0
+
+# Patched bluez 5.64-0ubuntu1.6 (the fix): ConnectProfile succeeds and js0 appears ~0.6 s later.
+# The second link-up (00:39) is the same service after a power cycle.
+00:37:56.717 watching ED:9D:F7:CA:32:D1 (log /var/log/ds4-clone-reconnect/reconnect-20261113-003756.log)  input devices before: []
+00:38:50.603 link up -> ConnectProfile 00001124-0000-1000-8000-00805f9b34fb
+00:38:51.161 result: input=[/dev/input/js0 ]  links=1
+00:39:54.868 link up -> ConnectProfile 00001124-0000-1000-8000-00805f9b34fb
+00:39:55.489 result: input=[/dev/input/js0 ]  links=1

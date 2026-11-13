@@ -1,0 +1,357 @@
+# btmon trace - plain power-on, Ubuntu's unmodified bluez 5.64-0ubuntu1.6, with tools/ds4-reconnect.sh (failure mode B)
+#
+# Captured with `btmon -w`, decoded with `btmon -r <file> -t`. Window: from the
+# controller's Connect Request to the disconnect. Omitted: the helper's
+# `hcitool con` polling (@ RAW Open/Close lines). Host address redacted to
+# 11:22:33:44:55:66, link key to <redacted>.
+#
+# Timeline (relative to Connect Complete at 23:11:00.131366):
+#   +124 ms  Link Key Request; host replies with the stored key
+#   +164 ms  controller requests PSM 17 -> refused (security block)
+#   +219 ms  link encrypted
+#   +221 ms  host (Device1.ConnectProfile from the helper) opens PSM 17 -> accepted
+#   +259 ms  controller requests PSM 19 (its CID 0x0052); host opens PSM 19 too
+#   +272 ms  bluetoothd refuses the controller's PSM 19 channel (host CID 0x0041)
+#            with EALREADY (see bluetoothd-debug.txt) and closes it
+#   +275 ms  input reports arrive on that closing channel - the controller sends
+#            input only on the channel it opened, not on the host's
+#   +473 ms  controller terminates the link (0x13 Remote User Terminated Connection)
+#
+> HCI Event: Connect Request (0x04) plen 10           #1 [hci0] 23:10:59.955327
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+        Link type: ACL (0x01)
+< HCI Command: Accept Connect.. (0x01|0x0009) plen 7  #2 [hci0] 23:10:59.955468
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Command Status (0x0f) plen 4             #3 [hci0] 23:10:59.957339
+      Accept Connection Request (0x01|0x0009) ncmd 2
+        Status: Success (0x00)
+= bluetoothd: profiles/input/device.c:ioctl_is_connected()...   23:11:00.049431
+> HCI Event: Role Change (0x12) plen 8                #4 [hci0] 23:11:00.109365
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Connect Complete (0x03) plen 11          #5 [hci0] 23:11:00.131366
+        Status: Success (0x00)
+        Handle: 3
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link type: ACL (0x01)
+        Encryption: Disabled (0x00)
+< HCI Command: Read Remote Su.. (0x01|0x001b) plen 2  #6 [hci0] 23:11:00.131616
+        Handle: 3
+> HCI Event: Max Slots Change (0x1b) plen 3           #7 [hci0] 23:11:00.134191
+        Handle: 3
+        Max slots: 5
+> HCI Event: Command Status (0x0f) plen 4             #8 [hci0] 23:11:00.135249
+      Read Remote Supported Features (0x01|0x001b) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Max Slots Change (0x1b) plen 3           #9 [hci0] 23:11:00.144390
+        Handle: 3
+        Max slots: 5
+> HCI Event: Max Slots Change (0x1b) plen 3          #10 [hci0] 23:11:00.148352
+        Handle: 3
+        Max slots: 5
+> HCI Event: Read Remote Supported.. (0x0b) plen 11  #11 [hci0] 23:11:00.149306
+        Status: Success (0x00)
+        Handle: 3
+        Features: 0xbf 0xfe 0x8d 0xfe 0xc8 0x2d 0x79 0x83
+          3 slot packets
+          5 slot packets
+          Encryption
+          Slot offset
+          Timing accuracy
+          Role switch
+          Sniff mode
+          Power control requests
+          Channel quality driven data rate (CQDDR)
+          SCO link
+          HV2 packets
+          HV3 packets
+          u-law log synchronous data
+          A-law log synchronous data
+          CVSD synchronous data
+          Power control
+          Transparent synchronous data
+          Broadcast Encryption
+          Enhanced Data Rate ACL 2 Mbps mode
+          Enhanced Data Rate ACL 3 Mbps mode
+          Enhanced inquiry scan
+          Interlaced inquiry scan
+          Interlaced page scan
+          RSSI with inquiry results
+          Extended SCO link (EV3 packets)
+          AFH capable peripheral
+          LE Supported (Controller)
+          3-slot Enhanced Data Rate ACL packets
+          5-slot Enhanced Data Rate ACL packets
+          Pause encryption
+          AFH capable central
+          Enhanced Data Rate eSCO 2 Mbps mode
+          Extended Inquiry Response
+          Secure Simple Pairing
+          Encapsulated PDU
+          Erroneous Data Reporting
+          Non-flushable Packet Boundary Flag
+          Link Supervision Timeout Changed Event
+          Inquiry TX Power Level
+          Extended features
+< HCI Command: Read Remote E.. (0x01|0x001c) plen 3  #12 [hci0] 23:11:00.149317
+        Handle: 3
+        Page: 1
+> HCI Event: Command Status (0x0f) plen 4            #13 [hci0] 23:11:00.150290
+      Read Remote Extended Features (0x01|0x001c) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Remote Name Req Comp.. (0x07) plen 255  #14 [hci0] 23:11:00.167345
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Name: Wireless Controller
+@ MGMT Event: Device Connec.. (0x000b) plen 39  {0x0001} [hci0] 23:11:00.167491
+        BR/EDR Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Flags: 0x00000000
+        Data length: 26
+        Name (complete): Wireless Controller
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+> HCI Event: Read Remote Extended... (0x23) plen 13  #15 [hci0] 23:11:00.168196
+        Status: Success (0x00)
+        Handle: 3
+        Page: 1/2
+        Features: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+          Secure Simple Pairing (Host Support)
+< ACL Data TX: Handle 3 flags 0x00 dlen 10           #16 [hci0] 23:11:00.168225
+      L2CAP: Information Request (0x0a) ident 1 len 2
+        Type: Extended features supported (0x0002)
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #17 [hci0] 23:11:00.182308
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Link Key Request (0x17) plen 6          #18 [hci0] 23:11:00.255282
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+< HCI Command: Link Key Req.. (0x01|0x000b) plen 22  #19 [hci0] 23:11:00.255344
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link key: <redacted>
+> HCI Event: Command Complete (0x0e) plen 10         #20 [hci0] 23:11:00.262232
+      Link Key Request Reply (0x01|0x000b) ncmd 2
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+> ACL Data RX: Handle 3 flags 0x02 dlen 12           #21 [hci0] 23:11:00.264213
+      L2CAP: Information Response (0x0b) ident 1 len 4
+        Type: Extended features supported (0x0002)
+        Result: Not supported (0x0001)
+< HCI Command: Set Connectio.. (0x01|0x0013) plen 3  #22 [hci0] 23:11:00.264404
+        Handle: 3
+        Encryption: Enabled (0x01)
+> HCI Event: Command Status (0x0f) plen 4            #23 [hci0] 23:11:00.265381
+      Set Connection Encryption (0x01|0x0013) ncmd 2
+        Status: Success (0x00)
+> ACL Data RX: Handle 3 flags 0x02 dlen 12           #24 [hci0] 23:11:00.295323
+      L2CAP: Connection Request (0x02) ident 3 len 4
+        PSM: 17 (0x0011)
+        Source CID: 80
+< ACL Data TX: Handle 3 flags 0x00 dlen 16           #25 [hci0] 23:11:00.295449
+      L2CAP: Connection Response (0x03) ident 3 len 8
+        Destination CID: 0
+        Source CID: 80
+        Result: Connection refused - security block (0x0003)
+        Status: No further information available (0x0000)
+> HCI Event: Encryption Change (0x08) plen 4         #26 [hci0] 23:11:00.350338
+        Status: Success (0x00)
+        Handle: 3
+        Encryption: Enabled with E0 (0x01)
+< HCI Command: Read Encrypti.. (0x05|0x0008) plen 2  #27 [hci0] 23:11:00.350485
+        Handle: 3
+> HCI Event: Command Complete (0x0e) plen 7          #28 [hci0] 23:11:00.352311
+      Read Encryption Key Size (0x05|0x0008) ncmd 2
+        Status: Success (0x00)
+        Handle: 3
+        Key size: 16
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #29 [hci0] 23:11:00.352445
+      L2CAP: Connection Request (0x02) ident 2 len 4
+        PSM: 17 (0x0011)
+        Source CID: 64
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #30 [hci0] 23:11:00.353345
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #31 [hci0] 23:11:00.356280
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> ACL Data RX: Handle 3 flags 0x02 dlen 16           #32 [hci0] 23:11:00.382227
+      L2CAP: Connection Response (0x03) ident 2 len 8
+        Destination CID: 81
+        Source CID: 64
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+> ACL Data RX: Handle 3 flags 0x02 dlen 16           #33 [hci0] 23:11:00.382236
+      L2CAP: Configure Request (0x04) ident 4 len 8
+        Destination CID: 64
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #34 [hci0] 23:11:00.382323
+      L2CAP: Configure Request (0x04) ident 3 len 4
+        Destination CID: 81
+        Flags: 0x0000
+< ACL Data TX: Handle 3 flags 0x00 dlen 18           #35 [hci0] 23:11:00.382333
+      L2CAP: Configure Response (0x05) ident 4 len 10
+        Source CID: 81
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #36 [hci0] 23:11:00.386353
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #37 [hci0] 23:11:00.387355
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> ACL Data RX: Handle 3 flags 0x02 dlen 18           #38 [hci0] 23:11:00.390313
+      L2CAP: Configure Response (0x05) ident 3 len 10
+        Source CID: 64
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+> ACL Data RX: Handle 3 flags 0x02 dlen 12           #39 [hci0] 23:11:00.390314
+      L2CAP: Connection Request (0x02) ident 5 len 4
+        PSM: 19 (0x0013)
+        Source CID: 82
+< ACL Data TX: Handle 3 flags 0x00 dlen 16           #40 [hci0] 23:11:00.390458
+      L2CAP: Connection Response (0x03) ident 5 len 8
+        Destination CID: 65
+        Source CID: 82
+        Result: Connection pending (0x0001)
+        Status: Authorization pending (0x0002)
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #41 [hci0] 23:11:00.390634
+      L2CAP: Connection Request (0x02) ident 4 len 4
+        PSM: 19 (0x0013)
+        Source CID: 66
+< ACL Data TX: Handle 3 flags 0x00 dlen 16           #42 [hci0] 23:11:00.390646
+      L2CAP: Connection Response (0x03) ident 5 len 8
+        Destination CID: 65
+        Source CID: 82
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #43 [hci0] 23:11:00.390649
+      L2CAP: Configure Request (0x04) ident 5 len 4
+        Destination CID: 82
+        Flags: 0x0000
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #44 [hci0] 23:11:00.393184
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #45 [hci0] 23:11:00.395368
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #46 [hci0] 23:11:00.396368
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #47 [hci0] 23:11:00.398221
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> ACL Data RX: Handle 3 flags 0x02 dlen 16           #48 [hci0] 23:11:00.398386
+      L2CAP: Connection Response (0x03) ident 4 len 8
+        Destination CID: 83
+        Source CID: 66
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+> ACL Data RX: Handle 3 flags 0x02 dlen 16           #49 [hci0] 23:11:00.398387
+      L2CAP: Configure Request (0x04) ident 6 len 8
+        Destination CID: 66
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #50 [hci0] 23:11:00.398394
+      L2CAP: Configure Request (0x04) ident 6 len 4
+        Destination CID: 83
+        Flags: 0x0000
+< ACL Data TX: Handle 3 flags 0x00 dlen 18           #51 [hci0] 23:11:00.398403
+      L2CAP: Configure Response (0x05) ident 6 len 10
+        Source CID: 83
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #52 [hci0] 23:11:00.401177
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #53 [hci0] 23:11:00.403369
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> ACL Data RX: Handle 3 flags 0x02 dlen 16           #54 [hci0] 23:11:00.403380
+      L2CAP: Configure Request (0x04) ident 7 len 8
+        Destination CID: 65
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> ACL Data RX: Handle 3 flags 0x02 dlen 18           #55 [hci0] 23:11:00.403380
+      L2CAP: Configure Response (0x05) ident 5 len 10
+        Source CID: 65
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+< ACL Data TX: Handle 3 flags 0x00 dlen 18           #56 [hci0] 23:11:00.403520
+      L2CAP: Configure Response (0x05) ident 7 len 10
+        Source CID: 82
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+= bluetoothd: profiles/input/server.c:connect_event_cb() Re..   23:11:00.403697
+< ACL Data TX: Handle 3 flags 0x00 dlen 12           #57 [hci0] 23:11:00.403711
+      L2CAP: Disconnection Request (0x06) ident 7 len 4
+        Destination CID: 82
+        Source CID: 65
+> ACL Data RX: Handle 3 flags 0x02 dlen 18           #58 [hci0] 23:11:00.406325
+      L2CAP: Configure Response (0x05) ident 6 len 10
+        Source CID: 65
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+> ACL Data RX: Handle 3 flags 0x02 dlen 15           #59 [hci0] 23:11:00.406326
+      Channel: 65 len 11 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #60 [hci0] 23:11:00.407312
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #61 [hci0] 23:11:00.409273
+        Num handles: 1
+        Handle: 3
+        Count: 1
+> ACL Data RX: Handle 3 flags 0x02 dlen 15           #62 [hci0] 23:11:00.410311
+      Channel: 65 len 11 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+> ACL Data RX: Handle 3 flags 0x02 dlen 12           #63 [hci0] 23:11:00.413435
+      L2CAP: Disconnection Response (0x07) ident 7 len 4
+        Destination CID: 82
+        Source CID: 65
+> ACL Data RX: Handle 3 flags 0x02 dlen 15           #64 [hci0] 23:11:00.463245
+      Channel: 65 len 11 [PSM 0 mode Basic (0x00)] {chan 65535}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+> ACL Data RX: Handle 3 flags 0x02 dlen 15           #65 [hci0] 23:11:00.463248
+      Channel: 65 len 11 [PSM 0 mode Basic (0x00)] {chan 65535}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+> HCI Event: Disconnect Complete (0x05) plen 4       #66 [hci0] 23:11:00.604295
+        Status: Success (0x00)
+        Handle: 3
+        Reason: Remote User Terminated Connection (0x13)
+@ MGMT Event: Device Disconn.. (0x000c) plen 8  {0x0001} [hci0] 23:11:00.604433
+        BR/EDR Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Reason: Connection terminated by remote host (0x03)

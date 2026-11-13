@@ -1,0 +1,892 @@
+# btmon trace - plain power-on with the fix (patched bluez 5.64-0ubuntu1.6 + ds4-clone-reconnect.service)
+#
+# Captured with `btmon -w`, decoded with `btmon -r <file> -t`. Window: from the
+# controller's Connect Request to the 20th input report. Omitted: the helper's
+# `hcitool con` polling (@ RAW Open/Close lines). Host address redacted to
+# 11:22:33:44:55:66, link key to <redacted>.
+#
+# Timeline (relative to Connect Complete at 00:38:50.679005):
+#   +125 ms  Link Key Request; host replies with the stored key
+#   +163 ms  controller requests PSM 17 -> refused (security block), as without the fix
+#   +218 ms  link encrypted
+#   +221 ms  host opens PSM 17 (helper's ConnectProfile) -> accepted
+#   +259 ms  controller requests PSM 19 (host CID 0x0041); the host's own
+#            PSM 19 request (host CID 0x0042) follows 0.2 ms later
+#   +274 ms  input reports start on the controller's channel (CID 0x0041); the
+#            patched daemon adopts it (bluetoothd-debug.txt part 3) and the host
+#            sends an L2CAP Disconnection Request for its own pending channel
+#            (CID 0x0042) at the same moment
+# The capture ran for 20 s after the link appeared: 2512 input reports on the
+# adopted channel between 00:38:50.953 and 00:39:11.813, and no disconnect.
+#
+> HCI Event: Connect Request (0x04) plen 10           #1 [hci0] 00:38:50.503984
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+        Link type: ACL (0x01)
+< HCI Command: Accept Connect.. (0x01|0x0009) plen 7  #2 [hci0] 00:38:50.504133
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Command Status (0x0f) plen 4             #3 [hci0] 00:38:50.506006
+      Accept Connection Request (0x01|0x0009) ncmd 2
+        Status: Success (0x00)
+= bluetoothd: profiles/input/device.c:ioctl_is_connected()...   00:38:50.607580
+> HCI Event: Role Change (0x12) plen 8                #4 [hci0] 00:38:50.658001
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Role: Central (0x00)
+> HCI Event: Connect Complete (0x03) plen 11          #5 [hci0] 00:38:50.679005
+        Status: Success (0x00)
+        Handle: 1
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link type: ACL (0x01)
+        Encryption: Disabled (0x00)
+< HCI Command: Read Remote Su.. (0x01|0x001b) plen 2  #6 [hci0] 00:38:50.679109
+        Handle: 1
+> HCI Event: Max Slots Change (0x1b) plen 3           #7 [hci0] 00:38:50.683006
+        Handle: 1
+        Max slots: 5
+> HCI Event: Command Status (0x0f) plen 4             #8 [hci0] 00:38:50.685005
+      Read Remote Supported Features (0x01|0x001b) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Max Slots Change (0x1b) plen 3           #9 [hci0] 00:38:50.692995
+        Handle: 1
+        Max slots: 5
+> HCI Event: Max Slots Change (0x1b) plen 3          #10 [hci0] 00:38:50.696008
+        Handle: 1
+        Max slots: 5
+> HCI Event: Read Remote Supported.. (0x0b) plen 11  #11 [hci0] 00:38:50.697026
+        Status: Success (0x00)
+        Handle: 1
+        Features: 0xbf 0xfe 0x8d 0xfe 0xc8 0x2d 0x79 0x83
+          3 slot packets
+          5 slot packets
+          Encryption
+          Slot offset
+          Timing accuracy
+          Role switch
+          Sniff mode
+          Power control requests
+          Channel quality driven data rate (CQDDR)
+          SCO link
+          HV2 packets
+          HV3 packets
+          u-law log synchronous data
+          A-law log synchronous data
+          CVSD synchronous data
+          Power control
+          Transparent synchronous data
+          Broadcast Encryption
+          Enhanced Data Rate ACL 2 Mbps mode
+          Enhanced Data Rate ACL 3 Mbps mode
+          Enhanced inquiry scan
+          Interlaced inquiry scan
+          Interlaced page scan
+          RSSI with inquiry results
+          Extended SCO link (EV3 packets)
+          AFH capable peripheral
+          LE Supported (Controller)
+          3-slot Enhanced Data Rate ACL packets
+          5-slot Enhanced Data Rate ACL packets
+          Pause encryption
+          AFH capable central
+          Enhanced Data Rate eSCO 2 Mbps mode
+          Extended Inquiry Response
+          Secure Simple Pairing
+          Encapsulated PDU
+          Erroneous Data Reporting
+          Non-flushable Packet Boundary Flag
+          Link Supervision Timeout Changed Event
+          Inquiry TX Power Level
+          Extended features
+< HCI Command: Read Remote E.. (0x01|0x001c) plen 3  #12 [hci0] 00:38:50.697215
+        Handle: 1
+        Page: 1
+> HCI Event: Command Status (0x0f) plen 4            #13 [hci0] 00:38:50.697998
+      Read Remote Extended Features (0x01|0x001c) ncmd 2
+        Status: Success (0x00)
+> HCI Event: Remote Name Req Comp.. (0x07) plen 255  #14 [hci0] 00:38:50.715990
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Name: Wireless Controller
+@ MGMT Event: Device Connec.. (0x000b) plen 39  {0x0001} [hci0] 00:38:50.716105
+        BR/EDR Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Flags: 0x00000000
+        Data length: 26
+        Name (complete): Wireless Controller
+        Class: 0x002508
+          Major class: Peripheral (mouse, joystick, keyboards)
+          Minor class: 0x02
+          Limited Discoverable Mode
+> HCI Event: Read Remote Extended... (0x23) plen 13  #15 [hci0] 00:38:50.717024
+        Status: Success (0x00)
+        Handle: 1
+        Page: 1/2
+        Features: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+          Secure Simple Pairing (Host Support)
+< ACL Data TX: Handle 1 flags 0x00 dlen 10           #16 [hci0] 00:38:50.717161
+      L2CAP: Information Request (0x0a) ident 1 len 2
+        Type: Extended features supported (0x0002)
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #17 [hci0] 00:38:50.731069
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Link Key Request (0x17) plen 6          #18 [hci0] 00:38:50.804036
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+< HCI Command: Link Key Req.. (0x01|0x000b) plen 22  #19 [hci0] 00:38:50.804167
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+        Link key: <redacted>
+> HCI Event: Command Complete (0x0e) plen 10         #20 [hci0] 00:38:50.811022
+      Link Key Request Reply (0x01|0x000b) ncmd 2
+        Status: Success (0x00)
+        Address: ED:9D:F7:CA:32:D1 (OUI ED-9D-F7)
+> ACL Data RX: Handle 1 flags 0x02 dlen 12           #21 [hci0] 00:38:50.811037
+      L2CAP: Information Response (0x0b) ident 1 len 4
+        Type: Extended features supported (0x0002)
+        Result: Not supported (0x0001)
+< HCI Command: Set Connectio.. (0x01|0x0013) plen 3  #22 [hci0] 00:38:50.811068
+        Handle: 1
+        Encryption: Enabled (0x01)
+> HCI Event: Command Status (0x0f) plen 4            #23 [hci0] 00:38:50.811994
+      Set Connection Encryption (0x01|0x0013) ncmd 2
+        Status: Success (0x00)
+> ACL Data RX: Handle 1 flags 0x02 dlen 12           #24 [hci0] 00:38:50.842332
+      L2CAP: Connection Request (0x02) ident 3 len 4
+        PSM: 17 (0x0011)
+        Source CID: 80
+< ACL Data TX: Handle 1 flags 0x00 dlen 16           #25 [hci0] 00:38:50.842487
+      L2CAP: Connection Response (0x03) ident 3 len 8
+        Destination CID: 0
+        Source CID: 80
+        Result: Connection refused - security block (0x0003)
+        Status: No further information available (0x0000)
+> HCI Event: Encryption Change (0x08) plen 4         #26 [hci0] 00:38:50.896901
+        Status: Success (0x00)
+        Handle: 1
+        Encryption: Enabled with E0 (0x01)
+< HCI Command: Read Encrypti.. (0x05|0x0008) plen 2  #27 [hci0] 00:38:50.896960
+        Handle: 1
+> HCI Event: Command Complete (0x0e) plen 7          #28 [hci0] 00:38:50.900010
+      Read Encryption Key Size (0x05|0x0008) ncmd 2
+        Status: Success (0x00)
+        Handle: 1
+        Key size: 16
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #29 [hci0] 00:38:50.900137
+      L2CAP: Connection Request (0x02) ident 2 len 4
+        PSM: 17 (0x0011)
+        Source CID: 64
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #30 [hci0] 00:38:50.924902
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #31 [hci0] 00:38:50.926051
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #32 [hci0] 00:38:50.930313
+      L2CAP: Connection Response (0x03) ident 2 len 8
+        Destination CID: 81
+        Source CID: 64
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #33 [hci0] 00:38:50.930314
+      L2CAP: Configure Request (0x04) ident 4 len 8
+        Destination CID: 64
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #34 [hci0] 00:38:50.930368
+      L2CAP: Configure Request (0x04) ident 3 len 4
+        Destination CID: 81
+        Flags: 0x0000
+< ACL Data TX: Handle 1 flags 0x00 dlen 18           #35 [hci0] 00:38:50.930378
+      L2CAP: Configure Response (0x05) ident 4 len 10
+        Source CID: 81
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #36 [hci0] 00:38:50.932962
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #37 [hci0] 00:38:50.934008
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 18           #38 [hci0] 00:38:50.938188
+      L2CAP: Configure Response (0x05) ident 3 len 10
+        Source CID: 64
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+> ACL Data RX: Handle 1 flags 0x02 dlen 12           #39 [hci0] 00:38:50.938189
+      L2CAP: Connection Request (0x02) ident 5 len 4
+        PSM: 19 (0x0013)
+        Source CID: 82
+< ACL Data TX: Handle 1 flags 0x00 dlen 16           #40 [hci0] 00:38:50.938221
+      L2CAP: Connection Response (0x03) ident 5 len 8
+        Destination CID: 65
+        Source CID: 82
+        Result: Connection pending (0x0001)
+        Status: Authorization pending (0x0002)
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #41 [hci0] 00:38:50.938389
+      L2CAP: Connection Request (0x02) ident 4 len 4
+        PSM: 19 (0x0013)
+        Source CID: 66
+< ACL Data TX: Handle 1 flags 0x00 dlen 16           #42 [hci0] 00:38:50.938414
+      L2CAP: Connection Response (0x03) ident 5 len 8
+        Destination CID: 65
+        Source CID: 82
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #43 [hci0] 00:38:50.938417
+      L2CAP: Configure Request (0x04) ident 5 len 4
+        Destination CID: 82
+        Flags: 0x0000
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #44 [hci0] 00:38:50.941926
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #45 [hci0] 00:38:50.942899
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #46 [hci0] 00:38:50.944899
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #47 [hci0] 00:38:50.945896
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #48 [hci0] 00:38:50.949200
+      L2CAP: Connection Response (0x03) ident 4 len 8
+        Destination CID: 83
+        Source CID: 66
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #49 [hci0] 00:38:50.949202
+      L2CAP: Configure Request (0x04) ident 6 len 8
+        Destination CID: 66
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #50 [hci0] 00:38:50.949202
+      L2CAP: Configure Request (0x04) ident 7 len 8
+        Destination CID: 65
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #51 [hci0] 00:38:50.949237
+      L2CAP: Configure Request (0x04) ident 6 len 4
+        Destination CID: 83
+        Flags: 0x0000
+< ACL Data TX: Handle 1 flags 0x00 dlen 18           #52 [hci0] 00:38:50.949248
+      L2CAP: Configure Response (0x05) ident 6 len 10
+        Source CID: 83
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 1 flags 0x00 dlen 18           #53 [hci0] 00:38:50.949250
+      L2CAP: Configure Response (0x05) ident 7 len 10
+        Source CID: 82
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #54 [hci0] 00:38:50.951898
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 18           #55 [hci0] 00:38:50.953195
+      L2CAP: Configure Response (0x05) ident 5 len 10
+        Source CID: 65
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+> ACL Data RX: Handle 1 flags 0x02 dlen 15           #56 [hci0] 00:38:50.953198
+      Channel: 65 len 11 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #57 [hci0] 00:38:50.953338
+      L2CAP: Disconnection Request (0x06) ident 7 len 4
+        Destination CID: 83
+        Source CID: 66
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #58 [hci0] 00:38:50.953479
+      L2CAP: Connection Request (0x02) ident 8 len 4
+        PSM: 1 (0x0001)
+        Source CID: 67
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #59 [hci0] 00:38:50.953891
+        Num handles: 1
+        Handle: 1
+        Count: 1
+< ACL Data TX: Handle 1 flags 0x00 dlen 6            #60 [hci0] 00:38:50.954833
+      Channel: 81 len 2 [PSM 17 mode Basic (0x00)] {chan 1}
+        43 a3                                            C.              
+> ACL Data RX: Handle 1 flags 0x02 dlen 15           #61 [hci0] 00:38:50.955193
+      Channel: 65 len 11 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 01 80 80 80 80 08 00 00 00 00                 ...........     
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #62 [hci0] 00:38:50.955911
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #63 [hci0] 00:38:50.957907
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #64 [hci0] 00:38:50.958896
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 18           #65 [hci0] 00:38:50.959185
+      L2CAP: Configure Response (0x05) ident 6 len 10
+        Source CID: 65
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+> ACL Data RX: Handle 1 flags 0x02 dlen 12           #66 [hci0] 00:38:50.959186
+      L2CAP: Disconnection Response (0x07) ident 7 len 4
+        Destination CID: 83
+        Source CID: 66
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #67 [hci0] 00:38:50.959902
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #68 [hci0] 00:38:50.964192
+      L2CAP: Connection Response (0x03) ident 8 len 8
+        Destination CID: 84
+        Source CID: 67
+        Result: Connection successful (0x0000)
+        Status: No further information available (0x0000)
+> ACL Data RX: Handle 1 flags 0x02 dlen 16           #69 [hci0] 00:38:50.964195
+      L2CAP: Configure Request (0x04) ident 8 len 8
+        Destination CID: 67
+        Flags: 0x0000
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+< ACL Data TX: Handle 1 flags 0x00 dlen 12           #70 [hci0] 00:38:50.964247
+      L2CAP: Configure Request (0x04) ident 9 len 4
+        Destination CID: 84
+        Flags: 0x0000
+< ACL Data TX: Handle 1 flags 0x00 dlen 18           #71 [hci0] 00:38:50.964258
+      L2CAP: Configure Response (0x05) ident 8 len 10
+        Source CID: 84
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 800
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #72 [hci0] 00:38:50.966898
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #73 [hci0] 00:38:50.967895
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 54           #74 [hci0] 00:38:50.968193
+      Channel: 64 len 50 [PSM 17 mode Basic (0x00)] {chan 1}
+        a3 a3 4a 75 6c 20 31 31 20 32 30 31 36 00 00 00  ..Jul 11 2016...
+        00 00 31 32 3a 33 33 3a 33 38 00 00 00 00 00 00  ..12:33:38......
+        00 00 00 01 04 64 01 00 00 00 09 70 00 02 0c 45  .....d.....p...E
+        62 2b                                            b+              
+< ACL Data TX: Handle 1 flags 0x00 dlen 6            #75 [hci0] 00:38:50.968229
+      Channel: 81 len 2 [PSM 17 mode Basic (0x00)] {chan 1}
+        43 05                                            C.              
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #76 [hci0] 00:38:50.971891
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 18           #77 [hci0] 00:38:50.974187
+      L2CAP: Configure Response (0x05) ident 9 len 10
+        Source CID: 67
+        Flags: 0x0000
+        Result: Success (0x0000)
+        Option: Maximum Transmission Unit (0x01) [mandatory]
+          MTU: 672
+< ACL Data TX: Handle 1 flags 0x00 dlen 24           #78 [hci0] 00:38:50.974483
+      Channel: 84 len 20 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 0 len 15
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 0
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #79 [hci0] 00:38:50.997943
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 46           #80 [hci0] 00:38:50.998191
+      Channel: 64 len 42 [PSM 17 mode Basic (0x00)] {chan 1}
+        a3 05 00 00 00 00 00 00 00 22 00 22 00 22 00 de  ........."."."..
+        00 de 00 de 1c 02 1c 02 00 20 00 e0 00 20 00 e0  ......... ... ..
+        00 20 00 e0 0b 00 db 5c 18 0a                    . .....\..      
+< ACL Data TX: Handle 1 flags 0x00 dlen 83           #81 [hci0] 00:38:50.999757
+      Channel: 82 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a2 11 c4 00 02 00 00 00 00 00 00 40 00 00 00 00  ...........@....
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 f9 36 e9 28     ............6.( 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83           #82 [hci0] 00:38:51.001194
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 08 00 00 26 0d 10  .............&..
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 3f 96 de 52     ...........?..R 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83           #83 [hci0] 00:38:51.001198
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 08 00 00 26 0d 10  .............&..
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 3f 96 de 52     ...........?..R 
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #84 [hci0] 00:38:51.003896
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52           #85 [hci0] 00:38:51.005191
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 0 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 26                                            .&              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26           #86 [hci0] 00:38:51.005312
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 1 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 26                                            .&              
+< ACL Data TX: Handle 1 flags 0x00 dlen 83           #87 [hci0] 00:38:51.006250
+      Channel: 82 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a2 11 c0 00 02 00 00 00 00 00 00 40 00 00 00 00  ...........@....
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 43 4a 3a 41     ...........CJ:A 
+< ACL Data TX: Handle 1 flags 0x00 dlen 83           #88 [hci0] 00:38:51.006261
+      Channel: 82 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a2 11 c0 00 02 00 00 00 00 00 00 40 00 00 00 00  ...........@....
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 43 4a 3a 41     ...........CJ:A 
+< ACL Data TX: Handle 1 flags 0x00 dlen 83           #89 [hci0] 00:38:51.006293
+      Channel: 82 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a2 11 c0 00 02 00 00 00 00 00 00 40 00 00 00 00  ...........@....
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 00 00 00 00 00 00 00 00 00 00 43 4a 3a 41     ...........CJ:A 
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #90 [hci0] 00:38:51.007999
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #91 [hci0] 00:38:51.009904
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #92 [hci0] 00:38:51.011895
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #93 [hci0] 00:38:51.012895
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52           #94 [hci0] 00:38:51.013189
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 1 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 4c                                            .L              
+> ACL Data RX: Handle 1 flags 0x02 dlen 83           #95 [hci0] 00:38:51.013189
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 0c 00 00 b9 13 10  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 cc 6e b4 6f     ............n.o 
+< ACL Data TX: Handle 1 flags 0x00 dlen 26           #96 [hci0] 00:38:51.013300
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 2 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 4c                                            .L              
+> HCI Event: Number of Completed Pa.. (0x13) plen 5  #97 [hci0] 00:38:51.015891
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83           #98 [hci0] 00:38:51.016187
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 0c 00 00 b9 13 10  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 cc 6e b4 6f     ............n.o 
+> ACL Data RX: Handle 1 flags 0x02 dlen 52           #99 [hci0] 00:38:51.020190
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 2 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 72                                            .r              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #100 [hci0] 00:38:51.020293
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 3 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 72                                            .r              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #101 [hci0] 00:38:51.046001
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #102 [hci0] 00:38:51.049201
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 10 00 00 4c 1a 10  .............L..
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 6a 34 5b da     ...........j4[. 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #103 [hci0] 00:38:51.049203
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 10 00 00 4c 1a 10  .............L..
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 6a 34 5b da     ...........j4[. 
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #104 [hci0] 00:38:51.053190
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 3 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 98                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #105 [hci0] 00:38:51.053368
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 4 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 98                                            ..              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #106 [hci0] 00:38:51.079980
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #107 [hci0] 00:38:51.082191
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 14 00 00 df 20 10  .............. .
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 c9 f6 51 77     .............Qw 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #108 [hci0] 00:38:51.082192
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 14 00 00 df 20 10  .............. .
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 c9 f6 51 77     .............Qw 
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #109 [hci0] 00:38:51.084194
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 4 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 be                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #110 [hci0] 00:38:51.084270
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 5 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 be                                            ..              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #111 [hci0] 00:38:51.086925
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #112 [hci0] 00:38:51.114196
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 5 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        00 e4                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #113 [hci0] 00:38:51.114285
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 6 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        00 e4                                            ..              
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #114 [hci0] 00:38:51.117192
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 18 00 00 72 27 10  .............r'.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 8c c5 8e a0     ............... 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #115 [hci0] 00:38:51.117195
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 18 00 00 72 27 10  .............r'.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 8c c5 8e a0     ............... 
+> HCI Event: Number of Completed P.. (0x13) plen 5  #116 [hci0] 00:38:51.117889
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #117 [hci0] 00:38:51.121225
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 6 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 0a                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #118 [hci0] 00:38:51.121296
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 7 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 0a                                            ..              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #119 [hci0] 00:38:51.124913
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #120 [hci0] 00:38:51.152314
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 7 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 30                                            .0              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #121 [hci0] 00:38:51.152500
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 8 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 30                                            .0              
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #122 [hci0] 00:38:51.155293
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 1c 00 00 05 2e 10  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 af fd 95 ce     ............... 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #123 [hci0] 00:38:51.155294
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 1c 00 00 05 2e 10  ................
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 af fd 95 ce     ............... 
+> HCI Event: Number of Completed P.. (0x13) plen 5  #124 [hci0] 00:38:51.155991
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #125 [hci0] 00:38:51.160196
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 8 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 56                                            .V              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #126 [hci0] 00:38:51.160420
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 9 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 56                                            .V              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #127 [hci0] 00:38:51.185883
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #128 [hci0] 00:38:51.186378
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 20 00 00 98 34 10  .......... ...4.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 81 76 21 10     ............v!. 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #129 [hci0] 00:38:51.186379
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 20 00 00 98 34 10  .......... ...4.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 81 76 21 10     ............v!. 
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #130 [hci0] 00:38:51.190208
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 9 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 7c                                            .|              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #131 [hci0] 00:38:51.190481
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 10 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 7c                                            .|              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #132 [hci0] 00:38:51.193893
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #133 [hci0] 00:38:51.194183
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 24 00 00 2b 3b 10  ..........$..+;.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 22 d9 51 4b     ...........".QK 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #134 [hci0] 00:38:51.194183
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 24 00 00 2b 3b 10  ..........$..+;.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 22 d9 51 4b     ...........".QK 
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #135 [hci0] 00:38:51.197196
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 10 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 a2                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #136 [hci0] 00:38:51.197398
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 11 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 a2                                            ..              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #137 [hci0] 00:38:51.200900
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 52          #138 [hci0] 00:38:51.228202
+      Channel: 67 len 48 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Response (0x07) tid 11 len 43
+        Attribute bytes: 38
+        Continuation state: 2
+        01 c8                                            ..              
+< ACL Data TX: Handle 1 flags 0x00 dlen 26          #139 [hci0] 00:38:51.228416
+      Channel: 84 len 22 [PSM 1 mode Basic (0x00)] {chan 4}
+      SDP: Service Search Attribute Request (0x06) tid 12 len 17
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 65535
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 2
+        01 c8                                            ..              
+> HCI Event: Number of Completed P.. (0x13) plen 5  #140 [hci0] 00:38:51.231882
+        Num handles: 1
+        Handle: 1
+        Count: 1
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #141 [hci0] 00:38:51.232215
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 28 00 00 be 41 10  ..........(...A.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 86 f5 45 91     .............E. 
+> ACL Data RX: Handle 1 flags 0x02 dlen 83          #142 [hci0] 00:38:51.232221
+      Channel: 65 len 79 [PSM 19 mode Basic (0x00)] {chan 2}
+        a1 11 c0 00 80 80 80 80 08 00 28 00 00 be 41 10  ..........(...A.
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+        00 0a 00 00 01 00 80 00 00 00 80 00 00 00 00 80  ................
+        00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00  ................
+        00 80 00 00 00 80 00 00 00 00 00 86 f5 45 91     .............E. 
+... (trace continues: 2492 further input reports on the same channel until the end of the 20 s capture; no disconnect) ...

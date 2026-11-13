@@ -1,0 +1,61 @@
+# Input and output tests over Bluetooth (with the fix) and USB
+#
+# Input and output were exercised through the Linux hid-playstation driver
+# (evdev, /sys/class/leds) and, for the output tests, also with raw hidraw
+# writes and with writes on the daemon's L2CAP sockets. Output results are what
+# the tester saw and felt on the controller. For every Bluetooth output test the
+# outgoing packets were checked in a btmon capture at the time; those captures
+# are not included.
+# Section 1 and the Bluetooth output tests ran with earlier revisions of the
+# patch. They also kept the controller-opened interrupt channel for the
+# session, as the published patch does (btmon-successful-connect.txt), so the
+# input and output paths were the same.
+
+## 1. Input over Bluetooth, patched daemon (30 s, every control exercised)
+
+events: 1132 in 30 s
+buttons registered: BTN_SOUTH (Cross), BTN_EAST (Circle), BTN_NORTH (Triangle), BTN_WEST (Square), BTN_TL (L1), BTN_TR (R1), BTN_TL2 (L2), BTN_TR2 (R2), BTN_SELECT (Share), BTN_START (Options), BTN_MODE (PS), BTN_THUMBL (L3), BTN_THUMBR (R3)
+axis ABS_X: 0..255
+axis ABS_Y: 0..255
+axis ABS_Z: 0..255
+axis ABS_RX: 0..255
+axis ABS_RY: 0..255
+axis ABS_RZ: 0..255
+axis ABS_HAT0X: -1..1
+axis ABS_HAT0Y: -1..1
+
+All 13 buttons, both sticks (ABS_X/Y, ABS_RX/RY), both analog triggers
+(ABS_Z/RZ) over their full 0..255 range, and the d-pad (ABS_HAT0X/Y).
+
+## 2. Output (rumble, lightbar)
+
+| # | transport / session | path | what went out (btmon) | rumble | lightbar |
+|---|---|---|---|---|---|
+| 1 | USB | driver (FF_RUMBLE + sysfs LED) | USB output report 0x05 | yes | yes |
+| 2 | USB | raw hidraw write | `05 07 00 00 ff ff ff 00 00 ...` | yes | yes |
+| 3 | Bluetooth, plain power-on (fix) | driver (FF_RUMBLE + sysfs LED) | `a2 11 c0 00 01 ...` / `a2 11 c0 00 02 ...` on the adopted channel | no | no |
+| 4 | Bluetooth, plain power-on (fix) | raw hidraw `write()`, kernel layout | `a2 11 c0 00 03 00 00 ff ff ...` on the adopted channel | no | no |
+| 5 | Bluetooth, plain power-on (fix) | raw hidraw `ioctl(HIDIOCSOUTPUT)`, kernel layout | the same `a2 11 ...` DATA packet on the adopted channel (for an output report the kernel uses the transport's output path, not SET_REPORT on the control channel) | no | no |
+| 6 | Bluetooth, plain power-on (fix) | raw hidraw, `hw_control 0x80`, flags `0xf7` | `a2 11 80 00 f7 ...` on the adopted channel | no | no |
+| 7 | Bluetooth, plain power-on (fix) | raw hidraw, `0xc0 0xa0`, flags `0xf7` | `a2 11 c0 a0 f7 ...` on the adopted channel | no | no |
+| 8 | Bluetooth, plain power-on (fix) | `send()` on the daemon's socket for the adopted channel | `a2 11 c0 00 03 ...` on the adopted channel | no | no |
+| 9 | Bluetooth, plain power-on (fix) | `send()` on the daemon's socket for the host's own PSM 19 connect | nothing: `send()` failed with ENOTCONN | - | - |
+| 10 | Bluetooth, SHARE+PS pairing session | driver (FF_RUMBLE + sysfs LED) | `a2 11 c0 00 01 ...` / `a2 11 c0 00 02 ...` on the host-opened channel | **yes** | no |
+
+"Adopted channel" = the PSM 19 channel the controller opened itself, which
+the patched daemon keeps for the session (the L2CAP channel IDs differ from
+connection to connection). In the pairing session the controller opens no
+channel; the host opens PSM 17 and PSM 19 and the same driver reports go out
+on the host-opened PSM 19 channel. Tests 8 and 9 used the daemon's sockets
+(borrowed read-only with pidfd_getfd) to try both interrupt channels the daemon
+held at the time; the host's own PSM 19 connect never completed, so no output
+could be sent on it during a plain power-on.
+
+All Bluetooth reports carry the standard CRC32 (seed 0xA2) and were sent as
+HIDP DATA|OUTPUT (`0xa2`) on the interrupt channel, which is what the Linux
+driver does. SET_REPORT on the control channel was not tested.
+
+Conclusion: rumble worked only in the session that ran on host-opened channels,
+i.e. after SHARE+PS. With the fix (plain power-on) the controller ignores
+output reports on the channel it opened itself. Lightbar colour changes are
+ignored over Bluetooth in both cases, but work over USB.

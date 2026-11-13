@@ -1,0 +1,34 @@
+# Feature report 0xA3 ("firmware info") - the same controller, two transports
+#
+# USB (49 bytes incl. report id):
+#   a3                                                 report id
+#   4d 61 79 20 31 37 20 32 30 31 36 00 00 00 00 00     "May 17 2016" + padding
+#   30 36 3a 33 36 3a 32 36 00 00 00 00 00 00 00 00     "06:36:26" + padding
+#   00 01 04 64 01 00 00 00 08 70 00 02 00 80 03 00     hw / sw / series / size
+#
+# Bluetooth (49 bytes incl. report id, captured with btmon):
+#   a3                                                 report id
+#   4a 75 6c 20 31 31 20 32 30 31 36 00 00 00 00 00     "Jul 11 2016" + padding
+#   31 32 3a 33 33 3a 33 38 00 00 00 00 00 00 00 00     "12:33:38" + padding
+#   00 01 04 64 01 00 00 00 09 70 00 02 0c 45 62 2b     hw / sw / series / crc32
+#
+# Decoded with the VersionInfo layout from jedi_tool.py
+# (https://github.com/chrepl/ds4); 48-byte payload after the report id:
+#   compile_date[16], compile_time[16], hw_major u16le, hw_minor u16le,
+#   sw_major u32le, sw_minor u16le, sw_series u16le, code_size u32le
+#
+#            USB                          Bluetooth
+#   date     May 17 2016 06:36:26         Jul 11 2016 12:33:38
+#   hw       0x0100 / 0x6404              0x0100 / 0x6404   (identical)
+#   sw       1.7008                       1.7009
+#   series   0x0200                       0x0200            (identical)
+#   tail     code_size 0x00038000         CRC32 0x2b62450c
+#
+# A genuine controller has one firmware and answers identically on both
+# transports. The CRC in the Bluetooth variant is the standard Sony-style
+# feature-report CRC (seed 0xA3); it was verified against the captured bytes:
+#   crc32(b"\xa3" + report[0:45]) == 0x2b62450c  (little-endian on the wire;
+#   report[0] is the report id, so the CRC input starts a3 a3 ...)
+#
+# Raw captures: feature-reports-usb.txt (USB) and btmon-successful-connect.txt
+# (the same A3 exchange appears in complete Bluetooth traces).

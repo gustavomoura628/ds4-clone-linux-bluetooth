@@ -1,0 +1,6 @@
+# Debug access to Sony DS4 (and clones), USB = 0003, Bluetooth = 0005: input and hidraw nodes
+# for the logged-in seat user (uaccess); the LED brightness files are made writable by all users.
+# Optional, for tools/ds4view.py. To remove: sudo rm /etc/udev/rules.d/70-ds4-debug.rules
+SUBSYSTEM=="input", KERNEL=="event*|js*", KERNELS=="0003:054C:*|0005:054C:*", TAG+="uaccess"
+SUBSYSTEM=="hidraw", KERNELS=="0003:054C:*|0005:054C:*", TAG+="uaccess"
+SUBSYSTEM=="leds", KERNELS=="0003:054C:*|0005:054C:*", RUN+="/bin/sh -c 'chmod 666 /sys%p/brightness /sys%p/multi_intensity 2>/dev/null; true'"

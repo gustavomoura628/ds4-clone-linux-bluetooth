@@ -1,0 +1,114 @@
+# bluez-input-hidp-clone.patch
+#
+# Adopt the device-initiated HIDP interrupt channel of Sony-VID DualShock 4
+# clones instead of refusing it.
+#
+# Applies to: profiles/input/device.c - BlueZ 5.64 (upstream tarball and
+#             Ubuntu 22.04's 5.64-0ubuntu1.6 source), also 5.66 and 5.72;
+#             see docs/04-replication.md
+# Apply with: patch -p1 -d bluez-<version> < bluez-input-hidp-clone.patch
+#
+# This patch modifies BlueZ, which is licensed GPL-2.0-or-later. The patch is
+# therefore distributed under the same licence. See NOTICE.
+#
+# Context: these controllers open their own interrupt channel (PSM 19) while
+# the host's own PSM 19 connect is still in progress, send input reports only
+# on their own channel, and drop the link when it is refused. Upstream
+# input_device_set_channel() returns -EALREADY in that situation and
+# connect_event_cb() closes the controller's channel. With this patch, for
+# devices with Sony's vendor ID (0x054c) only, the daemon adopts the
+# controller's channel and aborts its own pending connect; the aborted connect
+# is closed in interrupt_connect_cb() without touching the adopted channel or
+# the session. A session already running on a host-opened channel, a host
+# connect that was already shut down, and devices of any other vendor are not
+# adopted; for those only the guard in interrupt_connect_cb() can apply, which
+# closes a host connect that completes after the device's own channel was
+# dropped instead of running upstream's failure path on a NULL channel.
+#
+--- a/profiles/input/device.c
++++ b/profiles/input/device.c
+@@ -16,6 +16,7 @@
+ #define _GNU_SOURCE
+ #include <stdlib.h>
+ #include <stdbool.h>
++#include <sys/socket.h>
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+@@ -1177,6 +1178,17 @@
+ 	GIOCondition cond = G_IO_HUP | G_IO_ERR | G_IO_NVAL;
+ 	int err;
+ 
++	/* This connect was superseded by a device-initiated interrupt
++	 * channel in input_device_set_channel() (or that channel is already
++	 * gone again): close it and leave idev's channels and the session
++	 * alone.
++	 */
++	if (chan != idev->intr_io) {
++		DBG("closing superseded intr channel %p", chan);
++		g_io_channel_shutdown(chan, FALSE, NULL);
++		return;
++	}
++
+ 	if (conn_err) {
+ 		err = -EIO;
+ 		goto failed;
+@@ -1597,6 +1609,8 @@
+ {
+ 	struct input_device *idev = find_device(src, dst);
+ 	GIOCondition cond = G_IO_HUP | G_IO_ERR | G_IO_NVAL;
++	bool adopted = false;
++	int err;
+ 
+ 	DBG("idev %p psm %d", idev, psm);
+ 
+@@ -1615,16 +1629,46 @@
+ 							ctrl_watch_cb, idev);
+ 		break;
+ 	case L2CAP_PSM_HIDP_INTR:
+-		if (idev->intr_io)
++		/* Some Sony-VID DualShock 4 clones open their own interrupt
++		 * channel while the host's interrupt connect is still pending,
++		 * send input only on their own channel, and drop the link if it
++		 * is refused. For such a device, adopt its channel instead of
++		 * returning -EALREADY. Anything else is refused as upstream
++		 * does: other vendors, a channel already watched (intr_watch
++		 * set), and a host connect that was already shut down
++		 * (g_io_channel_shutdown() clears close_on_unref, which btio
++		 * sets on every channel it creates; the fd may be reused).
++		 */
++		if (idev->intr_io && (idev->intr_watch ||
++				!g_io_channel_get_close_on_unref(idev->intr_io) ||
++				btd_device_get_vendor(idev->device) != 0x054c))
+ 			return -EALREADY;
++		if (idev->intr_io) {
++			DBG("adopting device intr channel %p", io);
++			/* Abort the pending connect without closing its fd
++			 * (btio still watches it): its callback then runs
++			 * promptly and closes it in interrupt_connect_cb().
++			 */
++			shutdown(g_io_channel_unix_get_fd(idev->intr_io),
++								SHUT_RDWR);
++			g_io_channel_unref(idev->intr_io);
++			idev->intr_io = NULL;
++			adopted = true;
++		}
+ 		idev->intr_io = g_io_channel_ref(io);
+ 		idev->intr_watch = g_io_add_watch(idev->intr_io, cond,
+ 							intr_watch_cb, idev);
+ 		break;
+ 	}
+ 
+-	if (idev->intr_io && idev->ctrl_io)
+-		input_device_connadd(idev);
++	if (idev->intr_io && idev->ctrl_io) {
++		err = input_device_connadd(idev);
++		/* After adoption no other path reports the outcome of the
++		 * pending connect: complete it here on failure.
++		 */
++		if (err < 0 && adopted)
++			btd_service_connecting_complete(idev->service, err);
++	}
+ 
+ 	return 0;
+ }

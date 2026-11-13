@@ -1,0 +1,20 @@
+[Unit]
+Description=Host-initiated HIDP connect for a DualShock-4-compatible controller
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=@HELPER@ @CONTROLLER_MAC@
+Environment=LOGDIR=/var/log/ds4-clone-reconnect
+LogsDirectory=ds4-clone-reconnect
+Restart=always
+RestartSec=2
+Nice=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

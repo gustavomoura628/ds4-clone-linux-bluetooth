@@ -1,0 +1,13 @@
+# Bluetooth baseband identification
+#
+# `hcitool info <bd_addr>` reports the LMP version and the manufacturer ID of the
+# *controller's* baseband (the host adapter in the same run reports Realtek, 93).
+#
+=== hcitool con ===
+	< ACL ED:9D:F7:CA:32:D1 handle 2 state 1 lm CENTRAL AUTH ENCRYPT 
+=== hcitool info ED:9D:F7:CA:32:D1 ===
+	BD Address:  ED:9D:F7:CA:32:D1
+	Device Name: Wireless Controller
+	LMP Version: 5.1 (0xa) LMP Subversion: 0x22bb
+	Manufacturer: Zhuhai Jieli technology Co.,Ltd (1494)
+RSSI return value: -12

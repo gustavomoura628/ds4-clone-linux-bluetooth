@@ -1,0 +1,113 @@
+# bluetoothd debug output (bluetoothd -d, read with journalctl -o short-precise)
+#
+# Three runs, each a plain power-on of the controller (part 4 continues the
+# third). Host name removed.
+#
+# Part 1 - unmodified bluez 5.64-0ubuntu1.6, no helper (failure mode A). The daemon only sees the
+# link come and go; no input profile activity at all. The disconnect is reported
+# with reason 0 because it was issued by the kernel, not requested by bluetoothd.
+#
+23:10:01.457657 bluetoothd[1163845]: src/adapter.c:connected_callback() hci0 device ED:9D:F7:CA:32:D1 connected eir_len 26
+23:10:05.570465 bluetoothd[1163845]: src/adapter.c:dev_disconnected() Device ED:9D:F7:CA:32:D1 disconnected, reason 0
+23:10:05.570475 bluetoothd[1163845]: src/adapter.c:adapter_remove_connection()
+23:10:05.570487 bluetoothd[1163845]: plugins/policy.c:disconnect_cb() reason 0
+23:10:05.570490 bluetoothd[1163845]: src/adapter.c:bonding_attempt_complete() hci0 bdaddr ED:9D:F7:CA:32:D1 type 0 status 0xe
+23:10:05.570494 bluetoothd[1163845]: src/device.c:device_bonding_complete() bonding (nil) status 0x0e
+23:10:05.570496 bluetoothd[1163845]: src/device.c:device_bonding_failed() status 14
+23:10:05.570499 bluetoothd[1163845]: src/adapter.c:resume_discovery()
+
+# Part 2 - unmodified bluez 5.64-0ubuntu1.6 with tools/ds4-reconnect.sh (failure mode B). The
+# helper's ConnectProfile starts the host-initiated path; the controller's own
+# PSM 19 channel is refused with EALREADY (114), the controller hangs up
+# (reason 3 = terminated by remote), and the profile fails with -EIO.
+#
+23:11:00.049377 bluetoothd[1163845]: src/device.c:connect_profiles() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 00001124-0000-1000-8000-00805f9b34fb, client :1.11782
+23:11:00.049396 bluetoothd[1163845]: profiles/input/device.c:input_device_connect()
+23:11:00.049425 bluetoothd[1163845]: profiles/input/device.c:ioctl_is_connected() Can't get HIDP connection info
+23:11:00.049463 bluetoothd[1163845]: src/service.c:change_state() 0x56cc93941f70: device ED:9D:F7:CA:32:D1 profile input-hid state changed: disconnected -> connecting (0)
+23:11:00.167638 bluetoothd[1163845]: src/adapter.c:connected_callback() hci0 device ED:9D:F7:CA:32:D1 connected eir_len 26
+23:11:00.390552 bluetoothd[1163845]: profiles/input/server.c:confirm_event_cb()
+23:11:00.403628 bluetoothd[1163845]: profiles/input/server.c:connect_event_cb() Incoming connection from ED:9D:F7:CA:32:D1 on PSM 19
+23:11:00.403641 bluetoothd[1163845]: profiles/input/device.c:input_device_set_channel() idev 0x56cc93939180 psm 19
+23:11:00.403648 bluetoothd[1163845]: profiles/input/server.c:connect_event_cb() Refusing input device connect: Operation already in progress (114)
+23:11:00.604541 bluetoothd[1163845]: src/service.c:change_state() 0x56cc93941f70: device ED:9D:F7:CA:32:D1 profile input-hid state changed: connecting -> disconnected (-5)
+23:11:00.604555 bluetoothd[1163845]: src/device.c:device_profile_connected() input-hid Input/output error (5)
+23:11:00.604562 bluetoothd[1163845]: src/device.c:device_profile_connected() returning response to :1.11782
+23:11:00.610463 bluetoothd[1163845]: src/adapter.c:dev_disconnected() Device ED:9D:F7:CA:32:D1 disconnected, reason 3
+23:11:00.610479 bluetoothd[1163845]: src/adapter.c:adapter_remove_connection()
+23:11:00.610493 bluetoothd[1163845]: plugins/policy.c:disconnect_cb() reason 3
+23:11:00.610499 bluetoothd[1163845]: src/adapter.c:bonding_attempt_complete() hci0 bdaddr ED:9D:F7:CA:32:D1 type 0 status 0xe
+23:11:00.610506 bluetoothd[1163845]: src/device.c:device_bonding_complete() bonding (nil) status 0x0e
+23:11:00.610511 bluetoothd[1163845]: src/device.c:device_bonding_failed() status 14
+23:11:00.610517 bluetoothd[1163845]: src/adapter.c:resume_discovery()
+23:11:00.610526 bluetoothd[1163845]: profiles/input/device.c:ctrl_watch_cb() Device ED:9D:F7:CA:32:D1 disconnected
+23:11:02.637738 bluetoothd[1163845]: src/device.c:connect_profiles() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 (all), client :1.11783
+23:11:02.637750 bluetoothd[1163845]: profiles/input/device.c:input_device_connect()
+23:11:02.637759 bluetoothd[1163845]: profiles/input/device.c:ioctl_is_connected() Can't get HIDP connection info
+23:11:02.637786 bluetoothd[1163845]: src/service.c:change_state() 0x56cc93941f70: device ED:9D:F7:CA:32:D1 profile input-hid state changed: disconnected -> connecting (0)
+23:11:07.759306 bluetoothd[1163845]: profiles/input/device.c:control_connect_cb() connect to ED:9D:F7:CA:32:D1: Host is down (112)
+23:11:07.759315 bluetoothd[1163845]: src/service.c:change_state() 0x56cc93941f70: device ED:9D:F7:CA:32:D1 profile input-hid state changed: connecting -> disconnected (-5)
+23:11:07.759319 bluetoothd[1163845]: src/device.c:device_profile_connected() input-hid Input/output error (5)
+23:11:07.759322 bluetoothd[1163845]: src/device.c:device_profile_connected() returning response to :1.11783
+23:11:07.765386 bluetoothd[1163845]: src/adapter.c:connect_failed_callback() hci0 ED:9D:F7:CA:32:D1 status 4
+23:11:07.765391 bluetoothd[1163845]: plugins/policy.c:conn_fail_cb() status 4
+23:11:07.765395 bluetoothd[1163845]: src/adapter.c:bonding_attempt_complete() hci0 bdaddr ED:9D:F7:CA:32:D1 type 0 status 0x4
+23:11:07.765398 bluetoothd[1163845]: src/device.c:device_bonding_complete() bonding (nil) status 0x04
+23:11:07.765401 bluetoothd[1163845]: src/device.c:device_bonding_failed() status 4
+23:11:07.765403 bluetoothd[1163845]: src/adapter.c:resume_discovery()
+
+# Part 3 - patched bluez 5.64-0ubuntu1.6 with the service (the fix). The controller's PSM 19
+# channel is adopted, the HID profile reaches "connected", the host's superseded
+# PSM 19 connect is closed 0.2 ms later, and encrypt_notify() runs (Ubuntu's
+# ClassicBondedOnly=true default).
+#
+00:38:50.607503 bluetoothd[1471125]: src/device.c:connect_profiles() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 00001124-0000-1000-8000-00805f9b34fb, client :1.15047
+00:38:50.607520 bluetoothd[1471125]: profiles/input/device.c:input_device_connect()
+00:38:50.607537 bluetoothd[1471125]: profiles/input/device.c:ioctl_is_connected() Can't get HIDP connection info
+00:38:50.607572 bluetoothd[1471125]: src/service.c:change_state() 0x5ec72ba8b700: device ED:9D:F7:CA:32:D1 profile input-hid state changed: disconnected -> connecting (0)
+00:38:50.716204 bluetoothd[1471125]: src/adapter.c:connected_callback() hci0 device ED:9D:F7:CA:32:D1 connected eir_len 26
+00:38:50.938335 bluetoothd[1471125]: profiles/input/server.c:confirm_event_cb()
+00:38:50.953308 bluetoothd[1471125]: profiles/input/server.c:connect_event_cb() Incoming connection from ED:9D:F7:CA:32:D1 on PSM 19
+00:38:50.953325 bluetoothd[1471125]: profiles/input/device.c:input_device_set_channel() idev 0x5ec72ba81090 psm 19
+00:38:50.953330 bluetoothd[1471125]: profiles/input/device.c:input_device_set_channel() adopting device intr channel 0x5ec72ba883b0
+00:38:50.953430 bluetoothd[1471125]: src/service.c:change_state() 0x5ec72ba8b700: device ED:9D:F7:CA:32:D1 profile input-hid state changed: connecting -> connected (0)
+00:38:50.953440 bluetoothd[1471125]: src/device.c:device_profile_connected() input-hid Success (0)
+00:38:50.953448 bluetoothd[1471125]: src/device.c:device_profile_connected() returning response to :1.15047
+00:38:50.953508 bluetoothd[1471125]: src/service.c:btd_service_ref() 0x5ec72ba8b700: ref=3
+00:38:50.953525 bluetoothd[1471125]: plugins/policy.c:service_cb() Added input-hid reconnect 0
+00:38:50.953548 bluetoothd[1471125]: profiles/input/device.c:interrupt_connect_cb() closing superseded intr channel 0x5ec72ba77670
+00:38:50.953571 bluetoothd[1471125]: profiles/input/device.c:encrypt_notify()
+00:38:51.490832 bluetoothd[1471125]: src/device.c:search_cb() ED:9D:F7:CA:32:D1: No service update
+00:38:51.490843 bluetoothd[1471125]: src/device.c:device_svc_resolved() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 err 0
+
+# Part 4 - the same daemon afterwards (complete, nothing omitted): the
+# controller is switched off (disconnect, reason 3 = terminated by remote) and
+# on again, and reconnects with the same adoption sequence as part 3.
+#
+00:39:42.260860 bluetoothd[1471125]: src/adapter.c:dev_disconnected() Device ED:9D:F7:CA:32:D1 disconnected, reason 3
+00:39:42.260873 bluetoothd[1471125]: src/adapter.c:adapter_remove_connection()
+00:39:42.260889 bluetoothd[1471125]: plugins/policy.c:disconnect_cb() reason 3
+00:39:42.260894 bluetoothd[1471125]: src/adapter.c:bonding_attempt_complete() hci0 bdaddr ED:9D:F7:CA:32:D1 type 0 status 0xe
+00:39:42.260899 bluetoothd[1471125]: src/device.c:device_bonding_complete() bonding (nil) status 0x0e
+00:39:42.260903 bluetoothd[1471125]: src/device.c:device_bonding_failed() status 14
+00:39:42.260907 bluetoothd[1471125]: src/adapter.c:resume_discovery()
+00:39:42.374550 bluetoothd[1471125]: profiles/input/device.c:ctrl_watch_cb() Device ED:9D:F7:CA:32:D1 disconnected
+00:39:42.384371 bluetoothd[1471125]: profiles/input/device.c:intr_watch_cb() Device ED:9D:F7:CA:32:D1 disconnected
+00:39:42.384379 bluetoothd[1471125]: src/service.c:change_state() 0x5ec72ba8b700: device ED:9D:F7:CA:32:D1 profile input-hid state changed: connected -> disconnected (0)
+00:39:42.384383 bluetoothd[1471125]: profiles/input/device.c:input_device_enter_reconnect_mode() path=/org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 reconnect_mode=device
+00:39:54.873389 bluetoothd[1471125]: src/device.c:connect_profiles() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 00001124-0000-1000-8000-00805f9b34fb, client :1.15088
+00:39:54.873397 bluetoothd[1471125]: profiles/input/device.c:input_device_connect()
+00:39:54.873431 bluetoothd[1471125]: src/service.c:change_state() 0x5ec72ba8b700: device ED:9D:F7:CA:32:D1 profile input-hid state changed: disconnected -> connecting (0)
+00:39:55.022406 bluetoothd[1471125]: src/adapter.c:connected_callback() hci0 device ED:9D:F7:CA:32:D1 connected eir_len 26
+00:39:55.246315 bluetoothd[1471125]: profiles/input/server.c:confirm_event_cb()
+00:39:55.280448 bluetoothd[1471125]: profiles/input/server.c:connect_event_cb() Incoming connection from ED:9D:F7:CA:32:D1 on PSM 19
+00:39:55.280463 bluetoothd[1471125]: profiles/input/device.c:input_device_set_channel() idev 0x5ec72ba81090 psm 19
+00:39:55.280467 bluetoothd[1471125]: profiles/input/device.c:input_device_set_channel() adopting device intr channel 0x5ec72ba960d0
+00:39:55.280550 bluetoothd[1471125]: src/service.c:change_state() 0x5ec72ba8b700: device ED:9D:F7:CA:32:D1 profile input-hid state changed: connecting -> connected (0)
+00:39:55.280557 bluetoothd[1471125]: src/device.c:device_profile_connected() input-hid Success (0)
+00:39:55.280564 bluetoothd[1471125]: src/device.c:device_profile_connected() returning response to :1.15088
+00:39:55.280619 bluetoothd[1471125]: plugins/policy.c:service_cb() Added input-hid reconnect 0
+00:39:55.280639 bluetoothd[1471125]: profiles/input/device.c:interrupt_connect_cb() closing superseded intr channel 0x5ec72ba992a0
+00:39:55.280658 bluetoothd[1471125]: profiles/input/device.c:encrypt_notify()
+00:39:55.811458 bluetoothd[1471125]: src/device.c:search_cb() ED:9D:F7:CA:32:D1: No service update
+00:39:55.811471 bluetoothd[1471125]: src/device.c:device_svc_resolved() /org/bluez/hci0/dev_ED_9D_F7_CA_32_D1 err 0
